@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MireaPass</title>
+    <script src="https://unpkg.com/@vkontakte/superappkit@1.57.0/dist/index-umd.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+      body {
+          margin: 0;
+          padding: 0;
+          background-image: url('https://i.ibb.co/nBCR3fy/karp.jpg'); /* Замените 'your-background-image.jpg' на путь к вашей фоновой картинке */
+          background-size: cover;
+          background-position: center;
+          background-attachment: fixed;
+          font-family: Arial, sans-serif;
+          color: white;
+      }
+
+      .container {
+          text-align: center;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+      }
+
+      h1 {
+          font-size: 100px;
+      }
+
+      h2 {
+          font-size: 80px;
+      }
+
+  </style>
+  </head>
+  <body>
+
+    <div class="container">
+      <button onclick="sendData(359450337)">Нажми на меня</button>
+      <h1>MireaFckLists</h1>
+      <h2 id="paraName"></h2>
+      <h2 id="paraTime"></h2>
+    </div>
+
+    <!-- <button onclick="sendData(166276158)">Нажми на меня</button> -->
+
+    <script>
+      function sendData(value) {
+            $.ajax({
+                url: '/add-student',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ 'vk_user_id': value, 'para_hash': window.location.href.split('/')[4] }),
+                success: function(response) {
+                    console.log('Done');
+                    alert('Красава!');
+                },
+                error: function(error) {
+                    console.log(error);
+                    alert(error);
+                }
+            });
+        }
+
+        function getLessonInfo(value) {
+            $.ajax({
+                url: '/get-info/' + window.location.href.split('/')[4],
+                type: 'GET',
+                contentType: 'application/json',
+                success: function(response) {
+                  document.getElementById("paraName").textContent = 'Пара: ' + response['subject'];
+                  document.getElementById("paraTime").textContent = 'Время: ' + response['entry_datetime'];
+                  
+                },
+                error: function(error) {
+                  console.log(error);
+                }
+            });
+        }
+        
+        getLessonInfo();
+        //-------
+
+      const { Connect, Config, ConnectEvents } = window.SuperAppKit;
+
+      Config.init({
+        appId: 51742688, // идентификатор приложения
+      });
+
+
+      const oneTapButton = Connect.buttonOneTapAuth({
+        // Обязательный параметр в который нужно добавить обработчик событий приходящих из SDK
+        callback: function(e) {
+          const type = e.type;
+
+
+          if (!type) {
+            return false;
+          }
+
+
+          switch (type) {
+            case ConnectEvents.OneTapAuthEventsSDK.LOGIN_SUCCESS: // = 'VKSDKOneTapAuthLoginSuccess'
+              sendData(e.payload.user.id);
+
+              return false
+
+
+            // Для этих событий нужно открыть полноценный VK ID чтобы
+            // пользователь дорегистрировался или подтвердил телефон
+            case ConnectEvents.OneTapAuthEventsSDK.FULL_AUTH_NEEDED: //  = 'VKSDKOneTapAuthFullAuthNeeded'
+            case ConnectEvents.OneTapAuthEventsSDK.PHONE_VALIDATION_NEEDED: // = 'VKSDKOneTapAuthPhoneValidationNeeded'
+            case ConnectEvents.ButtonOneTapAuthEventsSDK.SHOW_LOGIN: // = 'VKSDKButtonOneTapAuthShowLogin'
+              return Connect.redirectAuth({ url: 'https://...', state: 'dj29fnsadjsd82...'}); // url - строка с url, на который будет произведён редирект после авторизации.
+              // state - состояние вашего приложение или любая произвольная строка, которая будет добавлена к url после авторизации.
+            // Пользователь перешел по кнопке "Войти другим способом"
+            case ConnectEvents.ButtonOneTapAuthEventsSDK.SHOW_LOGIN_OPTIONS: // = 'VKSDKButtonOneTapAuthShowLoginOptions'
+              // Параметр screen: phone позволяет сразу открыть окно ввода телефона в VK ID
+              // Параметр url: ссылка для перехода после авторизации. Должен иметь https схему. Обязательный параметр.
+              return Connect.redirectAuth({ screen: 'phone', url: 'https://...' });
+          }
+
+
+          return false;
+        },
+        // Не обязательный параметр с настройками отображения OneTap
+        options: {
+          showAlternativeLogin: false, // Отображение кнопки "Войти другим способом"
+          displayMode: 'default', // Режим отображения кнопки 'default' | 'name_phone' | 'phone_name'
+          buttonStyles: {
+            borderRadius: 8, // Радиус скругления кнопок
+            height: 100,
+          }
+        },
+      });
+
+
+      // Получить iframe можно с помощью метода getFrame()
+      document.body.appendChild(oneTapButton.getFrame());
+
+
+      // Удалить iframe можно с помощью OneTapButton.destroy();
+
+    </script>
+  </body>
+</html>
